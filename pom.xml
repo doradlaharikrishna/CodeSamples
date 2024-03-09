@@ -27,6 +27,18 @@
             <url>https://repo.maven.apache.org/maven2</url>
         </repository>
     </repositories>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
 
@@ -43,5 +55,10 @@
             <version>1.0.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.cache</groupId>
+            <artifactId>cache</artifactId>
+            <version>1.0.5</version>
+        </dependency>
     </dependencies>
 </project>
