@@ -27,5 +27,9 @@ public class Driver {
 
         executionEngine.moveToSubmitted(order);
         System.out.println("Order State after moveToSubmitted transition: " + order.getOrderState());
+
+        //Test to verify transition fails when we try to move from SHIP_IN_PROGRESS to COMPLETED state directly
+        //As this is not a valid transition in OrderStateMachine defined.
+        executionEngine.moveToUnReachableState(order);
     }
 }

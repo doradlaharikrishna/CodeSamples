@@ -2,11 +2,13 @@ package org.harikrishna.StateMachine;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.github.fsm.MachineBuilder;
 import io.github.fsm.StateMachine;
 import io.github.fsm.models.entities.Context;
 import io.github.fsm.models.executors.EventAction;
 
+@Singleton
 public class OrderExecutionEngine {
 
     private static final StateMachine<Context> orderStateMachine = MachineBuilder.start(OrderState.STARTED)
@@ -29,25 +31,31 @@ public class OrderExecutionEngine {
         }
     }
 
-    public boolean moveToInProgress(Order order) throws Exception {
+    public void moveToInProgress(Order order) throws Exception {
         CustomContext context = getContext(order.getOrderState(), OrderState.IN_PROGRESS, OrderEvent.MOVE_TO_IN_PROGRESS);
         context.setOrder(order);
         this.fire(context);
-        return true;
     }
 
-    public boolean moveToSubmitted(Order order) throws Exception {
+    public void moveToSubmitted(Order order) throws Exception {
         CustomContext context = getContext(order.getOrderState(), OrderState.SUBMITTED, OrderEvent.SUBMIT);
         context.setOrder(order);
         this.fire(context);
-        return true;
+
+        // We can start ship in progress as no action pending after Submitted
+        moveToShipInProgress(order);
     }
 
-    public boolean moveToShipInProgress(Order order) throws Exception {
+    public void moveToShipInProgress(Order order) throws Exception {
         CustomContext context = getContext(order.getOrderState(), OrderState.SHIP_IN_PROGRESS, OrderEvent.SHIP_IN_PROGRESS);
         context.setOrder(order);
         this.fire(context);
-        return true;
+    }
+
+    public void moveToUnReachableState(Order order) throws Exception {
+        CustomContext context = getContext(order.getOrderState(), OrderState.COMPLETED, OrderEvent.COMPLETE);
+        context.setOrder(order);
+        this.fire(context);
     }
 
     public static CustomContext getContext(OrderState fromState, OrderState toState, OrderEvent event) {
