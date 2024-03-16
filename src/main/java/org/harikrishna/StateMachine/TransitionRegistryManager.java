@@ -2,15 +2,12 @@ package org.harikrishna.StateMachine;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import io.github.fsm.models.entities.Context;
 import lombok.extern.slf4j.Slf4j;
-import org.reflections.Reflections;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -19,17 +16,17 @@ public class TransitionRegistryManager {
     private Map<TransitionRegistryKey, OrchestratorTransition> processors = Maps.newConcurrentMap();
 
     @Inject
-    public TransitionRegistryManager(Injector injector) {
-        Reflections reflections = new Reflections("org.harikrishna");
-        final Set<Class<?>> annotatedClasses = reflections.getTypesAnnotatedWith(TransitionDefinition.class);
-
-        annotatedClasses.forEach(annotatedClass -> {
-            if (OrchestratorTransition.class.isAssignableFrom(annotatedClass)) {
-                TransitionDefinition transitionDefinition = annotatedClass.getAnnotation(TransitionDefinition.class);
-                final OrchestratorTransition orchestratorTransition = OrchestratorTransition.class.cast(injector.getInstance(annotatedClass));
-                updateProcessorsMap(transitionDefinition, orchestratorTransition);
-            }
-        });
+    public TransitionRegistryManager(Set<OrchestratorTransition> transitions) {
+        try {
+            transitions.forEach(transition -> {
+                TransitionDefinition transitionDefinition = transition.getClass().getAnnotation(TransitionDefinition.class);
+                if (transitionDefinition != null) {
+                    updateProcessorsMap(transitionDefinition, transition);
+                }
+            });
+        } catch (Exception e) {
+            log.info("exception while initializing transition registry manager: ", e.getCause());
+        }
     }
 
     private void updateProcessorsMap(TransitionDefinition transitionDefinition,

@@ -1,21 +1,31 @@
 package org.harikrishna.StateMachine;
 
-import com.google.inject.Inject;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import lombok.extern.slf4j.Slf4j;
+import org.harikrishna.AppModule;
 
+@Slf4j
 public class Driver {
 
-    @Inject
-    private static TransitionRegistryManager transitionRegistryManager;
-
     public static void main(String[] args) throws Exception {
+        new Driver().run();
+    }
+
+    private void run() throws Exception {
+
+        Injector injector = Guice.createInjector(new AppModule());
         Order order = new Order();
         order.setOrderId("Order1");
         order.setCustomerId("User1");
         order.setOrderState(OrderState.STARTED);
 
-        OrderExecutionEngine executionEngine = new OrderExecutionEngine(transitionRegistryManager);
-        executionEngine.moveToInProgress(order);
+        OrderExecutionEngine executionEngine = injector.getInstance(OrderExecutionEngine.class);
 
-        System.out.println("Order State after moveToInProgress action: " + order.getOrderState());
+        executionEngine.moveToInProgress(order);
+        System.out.println("Order State after moveToInProgress transition: " + order.getOrderState());
+
+        executionEngine.moveToSubmitted(order);
+        System.out.println("Order State after moveToSubmitted transition: " + order.getOrderState());
     }
 }

@@ -4,56 +4,67 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import io.github.fsm.MachineBuilder;
 import io.github.fsm.StateMachine;
-import io.github.fsm.exceptions.StateNotFoundException;
 import io.github.fsm.models.entities.Context;
 import io.github.fsm.models.executors.EventAction;
 
-import java.util.Optional;
-
-import static org.reflections.Reflections.log;
-
 public class OrderExecutionEngine {
 
-    public static final StateMachine<Context> orderStateMachine = MachineBuilder.start(OrderState.STARTED)
+    private static final StateMachine<Context> orderStateMachine = MachineBuilder.start(OrderState.STARTED)
             .onTransition(OrderEvent.MOVE_TO_IN_PROGRESS, OrderState.STARTED, OrderState.IN_PROGRESS)
             .onTransition(OrderEvent.SUBMIT, OrderState.IN_PROGRESS, OrderState.SUBMITTED)
-            .onTransition(OrderEvent.SHIP_COMPLETE, OrderState.SUBMITTED, OrderState.SHIPPED)
-            .onTransition(OrderEvent.CANCEL, Sets.newHashSet(OrderState.SUBMITTED, OrderState.SHIPPED), OrderState.CANCELLED)
+            .onTransition(OrderEvent.SHIP_IN_PROGRESS, OrderState.SUBMITTED, OrderState.SHIP_IN_PROGRESS)
+            .onTransition(OrderEvent.SHIP_COMPLETE, OrderState.SHIP_IN_PROGRESS, OrderState.SHIPPED)
+            .onTransition(OrderEvent.CANCEL, Sets.newHashSet(OrderState.SUBMITTED, OrderState.SHIP_IN_PROGRESS, OrderState.SHIPPED), OrderState.CANCELLED)
             .onTransition(OrderEvent.DELIVER_COMPLETE, OrderState.SHIPPED, OrderState.DELIVERED)
             .onTransition(OrderEvent.START_RETURN, OrderState.DELIVERED, OrderState.RETURN_IN_PROGRESS)
-            .onTransition(OrderEvent.RETURN_COMPLETED, OrderState.DELIVERED, OrderState.RETURNED)
+            .onTransition(OrderEvent.RETURN_COMPLETED, OrderState.RETURN_IN_PROGRESS, OrderState.RETURNED)
             .onTransition(OrderEvent.COMPLETE, Sets.newHashSet(OrderState.DELIVERED, OrderState.RETURNED, OrderState.CANCELLED), OrderState.COMPLETED)
             .end(Sets.newHashSet(OrderState.COMPLETED));
 
     @Inject
-    public OrderExecutionEngine(TransitionRegistryManager transitionRegistryManager) throws Exception {
+    public OrderExecutionEngine(final TransitionRegistryManager transitionRegistryManager) throws Exception {
         if (orderStateMachine != null) {
             orderStateMachine.validate();
-
+            this.bind(transitionRegistryManager);
         }
     }
 
     public boolean moveToInProgress(Order order) throws Exception {
-        Context context = getContext(order.getOrderState(), OrderState.IN_PROGRESS, OrderEvent.MOVE_TO_IN_PROGRESS);
-        orderStateMachine.fire(OrderEvent.MOVE_TO_IN_PROGRESS, context);
+        CustomContext context = getContext(order.getOrderState(), OrderState.IN_PROGRESS, OrderEvent.MOVE_TO_IN_PROGRESS);
+        context.setOrder(order);
+        this.fire(context);
         return true;
     }
 
-    private Context getContext(OrderState fromState, OrderState toState, OrderEvent event) {
-        Context stateContext = new Context();
-        stateContext.setFrom(fromState);
-        stateContext.setTo(toState);
-        stateContext.setCausedEvent(event);
-        return stateContext;
+    public boolean moveToSubmitted(Order order) throws Exception {
+        CustomContext context = getContext(order.getOrderState(), OrderState.SUBMITTED, OrderEvent.SUBMIT);
+        context.setOrder(order);
+        this.fire(context);
+        return true;
+    }
+
+    public boolean moveToShipInProgress(Order order) throws Exception {
+        CustomContext context = getContext(order.getOrderState(), OrderState.SHIP_IN_PROGRESS, OrderEvent.SHIP_IN_PROGRESS);
+        context.setOrder(order);
+        this.fire(context);
+        return true;
+    }
+
+    public static CustomContext getContext(OrderState fromState, OrderState toState, OrderEvent event) {
+        CustomContext context = new CustomContext();
+        context.setFrom(fromState);
+        context.setTo(toState);
+        context.setCausedEvent(event);
+        return context;
     }
 
     private void bind(final TransitionRegistryManager transitionRegistryManager) throws Exception {
-        orderStateMachine.anyTransition((EventAction<Context>) context -> {
+        orderStateMachine.anyTransition((EventAction<CustomContext>) context -> {
             transitionRegistryManager.getProcessor(context).process(context);
         } );
     }
 
-    public void fire(final Context context) throws Exception {
+    public void fire(final CustomContext context) throws Exception {
         orderStateMachine.fire(context.getCausedEvent(), context);
     }
 }
