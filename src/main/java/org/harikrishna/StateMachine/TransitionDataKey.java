@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class TransitionRegistryKey {
+public class TransitionDataKey {
     private String event;
     private String from;
 }

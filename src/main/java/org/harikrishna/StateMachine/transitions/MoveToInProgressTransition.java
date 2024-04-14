@@ -3,12 +3,12 @@ package org.harikrishna.StateMachine.transitions;
 import lombok.extern.slf4j.Slf4j;
 import org.harikrishna.StateMachine.*;
 
-@TransitionDefinition(
+@TransitionData(
         event = OrderEvent.MOVE_TO_IN_PROGRESS_STRING,
         from = OrderState.STARTED_STRING
 )
 @Slf4j
-public class MoveToInProgressTransition implements OrchestratorTransition {
+public class MoveToInProgressTransition implements ITransition {
 
     @Override
     public void process(CustomContext context) {

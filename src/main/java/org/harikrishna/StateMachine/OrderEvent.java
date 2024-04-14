@@ -31,12 +31,20 @@ public enum OrderEvent implements Event {
     }
 
     public static final String MOVE_TO_IN_PROGRESS_STRING = "MOVE_TO_IN_PROGRESS";
+
     public static final String SUBMIT_STRING = "SUBMIT";
+
     public static final String SHIP_IN_PROGRESS_STRING = "SHIP_IN_PROGRESS";
+
     public static final String CANCEL_STRING = "CANCEL";
+
     public static final String SHIP_COMPLETE_STRING = "SHIP_COMPLETE";
+
     public static final String DELIVER_COMPLETE_STRING = "DELIVER_COMPLETE";
+
     public static final String START_RETURN_STRING = "START_RETURN";
+
     public static final String RETURN_COMPLETED_STRING = "RETURN_COMPLETED";
+
     public static final String COMPLETE_STRING = "COMPLETE";
 }

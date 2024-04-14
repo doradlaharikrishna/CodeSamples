@@ -24,10 +24,10 @@ public class OrderExecutionEngine {
             .end(Sets.newHashSet(OrderState.COMPLETED));
 
     @Inject
-    public OrderExecutionEngine(final TransitionRegistryManager transitionRegistryManager) throws Exception {
+    public OrderExecutionEngine(final TransitionDataManager transitionDataManager) throws Exception {
         if (orderStateMachine != null) {
             orderStateMachine.validate();
-            this.bind(transitionRegistryManager);
+            this.bind(transitionDataManager);
         }
     }
 
@@ -66,9 +66,9 @@ public class OrderExecutionEngine {
         return context;
     }
 
-    private void bind(final TransitionRegistryManager transitionRegistryManager) throws Exception {
+    private void bind(final TransitionDataManager transitionDataManager) throws Exception {
         orderStateMachine.anyTransition((EventAction<CustomContext>) context -> {
-            transitionRegistryManager.getProcessor(context).process(context);
+            transitionDataManager.getProcessor(context).process(context);
         } );
     }
 
