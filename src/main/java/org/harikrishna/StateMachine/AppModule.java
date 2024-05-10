@@ -1,11 +1,9 @@
-package org.harikrishna;
+package org.harikrishna.StateMachine;
 
 import com.google.inject.AbstractModule;
 import javax.inject.Singleton;
 
 import com.google.inject.multibindings.Multibinder;
-import org.harikrishna.StateMachine.ITransition;
-import org.harikrishna.StateMachine.TransitionDataManager;
 import org.harikrishna.StateMachine.transitions.MoveToInProgressTransition;
 import org.harikrishna.StateMachine.transitions.ShipInProgressTransition;
 import org.harikrishna.StateMachine.transitions.SubmittedTransition;
